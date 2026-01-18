@@ -37,6 +37,8 @@ export default function SalesPerformance() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const [products, setProducts] = useState<any[]>([]);
   const [cafes, setCafes] = useState<any[]>([]);
   
@@ -119,14 +121,18 @@ export default function SalesPerformance() {
       });
       const data = await response.json();
       if (data.error) {
-        alert(data.error);
+        setSuccessMessage(data.error);
+        setShowSuccessModal(true);
         return;
       }
       await fetchCafes();
       setNewCafe({ name: '', location: '' });
       setShowCafeModal(false);
+      setSuccessMessage('Cafe created successfully!');
+      setShowSuccessModal(true);
     } catch (error) {
-      alert('Failed to create cafe');
+      setSuccessMessage('Failed to create cafe');
+      setShowSuccessModal(true);
     }
   };
 
@@ -140,14 +146,18 @@ export default function SalesPerformance() {
       });
       const data = await response.json();
       if (data.error) {
-        alert(data.error);
+        setSuccessMessage(data.error);
+        setShowSuccessModal(true);
         return;
       }
       await fetchProducts();
       setNewProduct({ name: '', category: 'food', defaultPrice: 0 });
       setShowProductModal(false);
+      setSuccessMessage('Product created successfully!');
+      setShowSuccessModal(true);
     } catch (error) {
-      alert('Failed to create product');
+      setSuccessMessage('Failed to create product');
+      setShowSuccessModal(true);
     }
   };
   const handleDelete = async (id: string) => {
@@ -165,10 +175,12 @@ export default function SalesPerformance() {
         await fetchData();
         setShowDeleteModal(false);
         setTransactionToDelete(null);
-        alert('Transaction deleted successfully!');
+        setSuccessMessage('Transaction deleted successfully!');
+        setShowSuccessModal(true);
       }
     } catch (error) {
-      alert('Failed to delete transaction');
+      setSuccessMessage('Failed to delete transaction');
+      setShowSuccessModal(true);
     }
   };
 
@@ -201,10 +213,12 @@ export default function SalesPerformance() {
         setEditingTransaction(null);
         await fetchTransactions();
         await fetchData();
-        alert('Transaction updated successfully!');
+        setSuccessMessage('Transaction updated successfully!');
+        setShowSuccessModal(true);
       }
     } catch (error) {
-      alert('Failed to update transaction');
+      setSuccessMessage('Failed to update transaction');
+      setShowSuccessModal(true);
     }
   };
 
@@ -416,7 +430,7 @@ export default function SalesPerformance() {
                 type="datetime-local"
                 value={editingTransaction.dateTime}
                 onChange={(e) => setEditingTransaction({ ...editingTransaction, dateTime: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-slate-900"
                 required
               />
             </div>
@@ -425,7 +439,7 @@ export default function SalesPerformance() {
               <select
                 value={editingTransaction.site}
                 onChange={(e) => setEditingTransaction({ ...editingTransaction, site: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-slate-900"
                 required
               >
                 {cafes.map((cafe) => (
@@ -438,7 +452,7 @@ export default function SalesPerformance() {
               <select
                 value={editingTransaction.customerType}
                 onChange={(e) => setEditingTransaction({ ...editingTransaction, customerType: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-slate-900"
               >
                 <option value="new">New</option>
                 <option value="returning">Returning</option>
@@ -468,7 +482,7 @@ export default function SalesPerformance() {
                           };
                           setEditingTransaction({ ...editingTransaction, items: newItems });
                         }}
-                        className="w-full px-2 py-1 border rounded text-sm bg-white"
+                        className="w-full px-2 py-1 border rounded text-sm bg-white text-slate-900"
                         required
                       >
                         <option value="">Select Product</option>
@@ -484,7 +498,7 @@ export default function SalesPerformance() {
                         placeholder="Qty"
                         value={item.quantity}
                         onChange={(e) => updateTransactionItem(idx, 'quantity', parseInt(e.target.value) || 1)}
-                        className="w-full px-2 py-1 border rounded text-sm bg-white"
+                        className="w-full px-2 py-1 border rounded text-sm bg-white text-slate-900"
                         required
                       />
                     </div>
@@ -497,7 +511,7 @@ export default function SalesPerformance() {
                         placeholder="Price"
                         value={item.pricePerUnit}
                         onChange={(e) => updateTransactionItem(idx, 'pricePerUnit', parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1 border rounded text-sm bg-white"
+                        className="w-full px-2 py-1 border rounded text-sm bg-white text-slate-900"
                         required
                       />
                     </div>
@@ -540,7 +554,7 @@ export default function SalesPerformance() {
               type="datetime-local"
               value={dateTime}
               onChange={(e) => setDateTime(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors text-slate-900"
               required
             />
           </div>
@@ -552,7 +566,7 @@ export default function SalesPerformance() {
               <select
                 value={site}
                 onChange={(e) => setSite(e.target.value)}
-                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors"
+                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors text-slate-900"
                 required
               >
                 <option value="">Select Cafe</option>
@@ -629,7 +643,7 @@ export default function SalesPerformance() {
                           };
                           setItems(newItems);
                         }}
-                        className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-400 bg-white"
+                        className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-400 bg-white text-slate-900"
                         required
                       >
                         <option value="">Select Product</option>
@@ -643,7 +657,7 @@ export default function SalesPerformance() {
                     <div>
                       <select
                         value={item.category}
-                        className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50"
+                        className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-900"
                         disabled
                       >
                         <option value="food">Food</option>
@@ -659,7 +673,7 @@ export default function SalesPerformance() {
                         placeholder="Qty"
                         value={item.quantity}
                         onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                        className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-400 bg-white"
+                        className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-400 bg-white text-slate-900"
                         required
                       />
                     </div>
@@ -671,7 +685,7 @@ export default function SalesPerformance() {
                         placeholder="Price"
                         value={item.pricePerUnit || ''}
                         onChange={(e) => updateItem(index, 'pricePerUnit', parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-400 bg-white"
+                        className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-400 bg-white text-slate-900"
                         required
                       />
                     </div>
@@ -747,7 +761,7 @@ export default function SalesPerformance() {
               type="text"
               value={newCafe.name}
               onChange={(e) => setNewCafe({ ...newCafe, name: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors text-slate-900"
               required
               placeholder="e.g., Downtown Cafe"
             />
@@ -758,7 +772,7 @@ export default function SalesPerformance() {
               type="text"
               value={newCafe.location}
               onChange={(e) => setNewCafe({ ...newCafe, location: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors text-slate-900"
               placeholder="e.g., 123 Main Street"
             />
           </div>
@@ -787,7 +801,7 @@ export default function SalesPerformance() {
               type="text"
               value={newProduct.name}
               onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors text-slate-900"
               required
               placeholder="e.g., Cappuccino"
             />
@@ -797,7 +811,7 @@ export default function SalesPerformance() {
             <select
               value={newProduct.category}
               onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors text-slate-900"
               required
             >
               <option value="food">Food</option>
@@ -812,7 +826,7 @@ export default function SalesPerformance() {
               min="0"
               value={newProduct.defaultPrice || ''}
               onChange={(e) => setNewProduct({ ...newProduct, defaultPrice: parseFloat(e.target.value) || 0 })}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 focus:border-slate-400 text-sm bg-white transition-colors text-slate-900"
               required
               placeholder="0.00"
             />
@@ -864,6 +878,53 @@ export default function SalesPerformance() {
               className="px-6"
             >
               Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Success Modal */}
+      <Modal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} title="">
+        <div className="space-y-4">
+          <div className="flex flex-col items-center justify-center p-6">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
+              successMessage.toLowerCase().includes('failed') || successMessage.toLowerCase().includes('error')
+                ? 'bg-rose-100'
+                : 'bg-emerald-100'
+            }`}>
+              {successMessage.toLowerCase().includes('failed') || successMessage.toLowerCase().includes('error') ? (
+                <svg className="w-8 h-8 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <h3 className={`text-lg font-bold mb-2 ${
+              successMessage.toLowerCase().includes('failed') || successMessage.toLowerCase().includes('error')
+                ? 'text-rose-900'
+                : 'text-emerald-900'
+            }`}>
+              {successMessage.toLowerCase().includes('failed') || successMessage.toLowerCase().includes('error') 
+                ? 'Error' 
+                : 'Success!'}
+            </h3>
+            <p className="text-sm text-slate-700 text-center">{successMessage}</p>
+          </div>
+          
+          <div className="flex justify-center pt-2">
+            <Button
+              type="button"
+              onClick={() => setShowSuccessModal(false)}
+              className={`px-8 shadow-lg ${
+                successMessage.toLowerCase().includes('failed') || successMessage.toLowerCase().includes('error')
+                  ? 'bg-rose-600 hover:bg-rose-700'
+                  : 'bg-emerald-600 hover:bg-emerald-700'
+              } text-white`}
+            >
+              OK
             </Button>
           </div>
         </div>
