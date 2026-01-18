@@ -35,6 +35,8 @@ export default function SalesPerformance() {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [cafes, setCafes] = useState<any[]>([]);
   
@@ -149,13 +151,20 @@ export default function SalesPerformance() {
     }
   };
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this transaction? This will recalculate all analytics.')) return;
+    setTransactionToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!transactionToDelete) return;
     
     try {
-      const response = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
+      const response = await fetch(`/api/transactions/${transactionToDelete}`, { method: 'DELETE' });
       if (response.ok) {
         await fetchTransactions();
         await fetchData();
+        setShowDeleteModal(false);
+        setTransactionToDelete(null);
         alert('Transaction deleted successfully!');
       }
     } catch (error) {
@@ -402,7 +411,7 @@ export default function SalesPerformance() {
         <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)} title="Edit Transaction">
           <form onSubmit={handleUpdate} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Date & Time</label>
+              <label className="block text-sm font-semibold text-slate-900 mb-1.5">Date & Time</label>
               <input
                 type="datetime-local"
                 value={editingTransaction.dateTime}
@@ -412,7 +421,7 @@ export default function SalesPerformance() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Site</label>
+              <label className="block text-sm font-semibold text-slate-900 mb-1.5">Site</label>
               <select
                 value={editingTransaction.site}
                 onChange={(e) => setEditingTransaction({ ...editingTransaction, site: e.target.value })}
@@ -425,7 +434,7 @@ export default function SalesPerformance() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Customer Type</label>
+              <label className="block text-sm font-semibold text-slate-900 mb-1.5">Customer Type</label>
               <select
                 value={editingTransaction.customerType}
                 onChange={(e) => setEditingTransaction({ ...editingTransaction, customerType: e.target.value })}
@@ -437,7 +446,7 @@ export default function SalesPerformance() {
             </div>
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium text-gray-700">Items</label>
+                <label className="block text-sm font-semibold text-slate-900">Items</label>
                 <button type="button" onClick={addTransactionItem} className="text-sm text-blue-600 hover:text-blue-700 font-medium">
                   + Add Item
                 </button>
@@ -526,7 +535,7 @@ export default function SalesPerformance() {
         <form onSubmit={handleAddSale} className="space-y-4">
           {/* Date & Time */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Date & Time *</label>
+            <label className="block text-sm font-semibold text-slate-900 mb-1.5">Date & Time *</label>
             <input
               type="datetime-local"
               value={dateTime}
@@ -538,7 +547,7 @@ export default function SalesPerformance() {
 
           {/* Site */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Site/Location *</label>
+            <label className="block text-sm font-semibold text-slate-900 mb-1.5">Site/Location *</label>
             <div className="flex gap-2">
               <select
                 value={site}
@@ -565,7 +574,7 @@ export default function SalesPerformance() {
 
           {/* Customer Type */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Customer Type *</label>
+            <label className="block text-sm font-semibold text-slate-900 mb-1.5">Customer Type *</label>
             <div className="flex gap-4">
               <label className="flex items-center cursor-pointer">
                 <input
@@ -575,7 +584,7 @@ export default function SalesPerformance() {
                   onChange={(e) => setCustomerType(e.target.value as 'new' | 'returning')}
                   className="mr-2 w-4 h-4 text-slate-600"
                 />
-                <span className="text-sm font-medium text-slate-700">New Customer</span>
+                <span className="text-sm font-semibold text-slate-900">New Customer</span>
               </label>
               <label className="flex items-center cursor-pointer">
                 <input
@@ -585,7 +594,7 @@ export default function SalesPerformance() {
                   onChange={(e) => setCustomerType(e.target.value as 'new' | 'returning')}
                   className="mr-2 w-4 h-4 text-slate-600"
                 />
-                <span className="text-sm font-medium text-slate-700">Returning Customer</span>
+                <span className="text-sm font-semibold text-slate-900">Returning Customer</span>
               </label>
             </div>
           </div>
@@ -593,7 +602,7 @@ export default function SalesPerformance() {
           {/* Items */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-slate-700">Items *</label>
+              <label className="block text-sm font-semibold text-slate-900">Items *</label>
               <button
                 type="button"
                 onClick={() => setShowProductModal(true)}
@@ -696,7 +705,7 @@ export default function SalesPerformance() {
           {/* Total */}
           <div className="bg-gradient-to-r from-slate-50 to-slate-100 border-2 border-slate-200 rounded-xl p-3">
             <div className="flex justify-between items-center">
-              <span className="text-base font-medium text-slate-700">Total Amount:</span>
+              <span className="text-base font-semibold text-slate-900">Total Amount:</span>
               <span className="text-2xl font-bold text-slate-900">£{totalAmount.toFixed(2)}</span>
             </div>
           </div>
@@ -733,7 +742,7 @@ export default function SalesPerformance() {
       <Modal isOpen={showCafeModal} onClose={() => setShowCafeModal(false)} title="Create New Cafe">
         <form onSubmit={handleCreateCafe} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Cafe Name *</label>
+            <label className="block text-sm font-semibold text-slate-900 mb-1.5">Cafe Name *</label>
             <input
               type="text"
               value={newCafe.name}
@@ -744,7 +753,7 @@ export default function SalesPerformance() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Location</label>
+            <label className="block text-sm font-semibold text-slate-900 mb-1.5">Location</label>
             <input
               type="text"
               value={newCafe.location}
@@ -773,7 +782,7 @@ export default function SalesPerformance() {
       <Modal isOpen={showProductModal} onClose={() => setShowProductModal(false)} title="Create New Product">
         <form onSubmit={handleCreateProduct} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Product Name *</label>
+            <label className="block text-sm font-semibold text-slate-900 mb-1.5">Product Name *</label>
             <input
               type="text"
               value={newProduct.name}
@@ -784,7 +793,7 @@ export default function SalesPerformance() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Category *</label>
+            <label className="block text-sm font-semibold text-slate-900 mb-1.5">Category *</label>
             <select
               value={newProduct.category}
               onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
@@ -796,7 +805,7 @@ export default function SalesPerformance() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Default Price (£) *</label>
+            <label className="block text-sm font-semibold text-slate-900 mb-1.5">Default Price (£) *</label>
             <input
               type="number"
               step="0.01"
@@ -822,6 +831,42 @@ export default function SalesPerformance() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Delete Transaction">
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 p-4 bg-rose-50 border border-rose-200 rounded-lg">
+            <svg className="w-6 h-6 text-rose-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+              <h4 className="text-sm font-semibold text-rose-900 mb-1">Are you sure you want to delete this transaction?</h4>
+              <p className="text-sm text-rose-700">This action cannot be undone. Deleting this transaction will recalculate all analytics and sales metrics.</p>
+            </div>
+          </div>
+          
+          <div className="flex gap-3 pt-2">
+            <Button
+              type="button"
+              onClick={confirmDelete}
+              className="flex-1 bg-rose-600 hover:bg-rose-700 text-white shadow-lg"
+            >
+              Delete Transaction
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                setShowDeleteModal(false);
+                setTransactionToDelete(null);
+              }}
+              variant="outline"
+              className="px-6"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
       </Modal>
     </section>
   );
