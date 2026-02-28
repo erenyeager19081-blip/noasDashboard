@@ -42,12 +42,11 @@ export async function GET(request: NextRequest) {
     const totalTransactions = transactions.length;
     const averageTransaction = totalTransactions > 0 ? totalSales / totalTransactions : 0;
     
-    // Get unique stores
-    const uniqueStores = new Set(transactions.map(t => t.storeId));
-    const totalStores = uniqueStores.size;
-    
-    // Get last upload date
+    // Get last upload metadata
     const lastUpload = await uploadsCol.findOne({}, { sort: { uploadedAt: -1 } });
+    
+    // Get total stores from the last upload (number of files uploaded)
+    const totalStores = lastUpload?.filesCount || 0;
     
     return NextResponse.json({
       totalSales,

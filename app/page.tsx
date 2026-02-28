@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from './components/DashboardLayout';
 import { Card, StatCard } from './components/ui';
@@ -25,6 +25,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly' | 'all'>('monthly');
 
+  useEffect(() => {
+    fetchStats();
+  }, [period]);
+
   const fetchStats = async () => {
     setLoading(true);
     try {
@@ -39,11 +43,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period]);
 
   const getPeriodLabel = () => {
     const labels = {

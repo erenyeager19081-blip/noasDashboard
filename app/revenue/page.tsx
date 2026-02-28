@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
 import { Card, StatCard } from '../components/ui';
 
@@ -23,6 +23,10 @@ export default function RevenuePage() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
+  useEffect(() => {
+    fetchData();
+  }, [period]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -37,11 +41,6 @@ export default function RevenuePage() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-GB', {
