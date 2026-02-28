@@ -46,12 +46,34 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <NavItem sectionId="/upload" icon="upload" label="Upload Data" onClick={handleNavClick} />
             
             <div className="pt-4 pb-2">
-              <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Analytics</p>
+              <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Business Performance</p>
+            </div>
+            
+            <NavItem sectionId="/sales-performance" icon="chart" label="Sales Performance" onClick={handleNavClick} />
+            <NavItem sectionId="/site-comparison" icon="compare" label="Site Comparison" onClick={handleNavClick} />
+            <NavItem sectionId="/time-demand" icon="time" label="Time-Based Demand" onClick={handleNavClick} />
+            
+            <div className="pt-4 pb-2">
+              <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Product & Customers</p>
+            </div>
+            
+            <NavItem sectionId="/product-performance" icon="trends" label="Product Performance" onClick={handleNavClick} />
+            <NavItem sectionId="/customer-behaviour" icon="performance" label="Customer Behaviour" onClick={handleNavClick} />
+            
+            <div className="pt-4 pb-2">
+              <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Advanced Analytics</p>
+            </div>
+            
+            <NavItem sectionId="/revenue" icon="revenue" label="Revenue Analytics" onClick={handleNavClick} />
+            <NavItem sectionId="/trends" icon="trends" label="Trends & Forecasts" onClick={handleNavClick} />
+            <NavItem sectionId="/performance" icon="performance" label="Performance Metrics" onClick={handleNavClick} />
+            
+            <div className="pt-4 pb-2">
+              <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Legacy Reports</p>
             </div>
             
             <NavItem sectionId="/sales" icon="chart" label="Sales Overview" onClick={handleNavClick} />
             <NavItem sectionId="/comparison" icon="compare" label="Store Comparison" onClick={handleNavClick} />
-            <NavItem sectionId="/time-analysis" icon="time" label="Time Analysis" onClick={handleNavClick} />
           </div>
         </nav>
 
@@ -90,6 +112,9 @@ const icons: Record<string, ReactElement> = {
   chart: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
   compare: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
   time: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+  revenue: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+  trends: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
+  performance: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>,
 };
 
 function NavItem({ sectionId, icon, label, active, onClick }: NavItemProps) {
