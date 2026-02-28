@@ -192,7 +192,7 @@ export default function SalesPerformancePage() {
         {/* Daily Breakdown - Horizontal Scroll */}
         <Card className="p-6">
           <h2 className="text-xl font-bold text-slate-900 mb-6">Current Week Daily Performance</h2>
-          <div className="relative">
+          <div className="relative max-w-full overflow-hidden">
             <div className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
               <div className="flex gap-6 min-w-max px-2">
                 {[...data.dailyBreakdown].reverse().map((day) => (

@@ -90,20 +90,6 @@ export default function Home() {
       color: 'from-violet-500 to-purple-600'
     },
     {
-      title: 'Product Performance',
-      description: 'Top and bottom products by revenue',
-      iconType: 'trends',
-      route: '/product-performance',
-      color: 'from-emerald-500 to-teal-600'
-    },
-    {
-      title: 'Customer Behaviour',
-      description: 'New vs returning customer analysis',
-      iconType: 'performance',
-      route: '/customer-behaviour',
-      color: 'from-rose-500 to-pink-600'
-    },
-    {
       title: 'Revenue Analytics',
       description: 'Track revenue trends, growth rates, and projections',
       iconType: 'revenue',

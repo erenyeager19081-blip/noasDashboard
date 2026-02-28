@@ -54,13 +54,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <NavItem sectionId="/time-demand" icon="time" label="Time-Based Demand" onClick={handleNavClick} />
             
             <div className="pt-4 pb-2">
-              <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Product & Customers</p>
-            </div>
-            
-            <NavItem sectionId="/product-performance" icon="trends" label="Product Performance" onClick={handleNavClick} />
-            <NavItem sectionId="/customer-behaviour" icon="performance" label="Customer Behaviour" onClick={handleNavClick} />
-            
-            <div className="pt-4 pb-2">
               <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Advanced Analytics</p>
             </div>
             
