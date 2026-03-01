@@ -94,7 +94,7 @@ export default function SiteComparisonPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
+      <div className="p-8 max-w-full overflow-x-hidden">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Site Comparison</h1>
           <p className="text-base text-slate-600 mt-2 font-medium">

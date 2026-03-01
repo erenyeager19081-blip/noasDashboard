@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public paths that don't require authentication
-  if (pathname === '/login' || pathname.startsWith('/api/auth')) {
+  if (pathname === '/login' || pathname.startsWith('/api/auth') || pathname === '/api/init-db') {
     return NextResponse.next();
   }
 

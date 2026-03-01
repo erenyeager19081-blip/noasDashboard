@@ -69,11 +69,13 @@ export default function SalesPerformancePage() {
     );
   }
 
-  const maxDailySales = Math.max(...data.dailyBreakdown.map(d => d.sales));
+  const maxDailySales = data.dailyBreakdown && data.dailyBreakdown.length > 0
+    ? Math.max(...data.dailyBreakdown.map(d => d.sales))
+    : 0;
 
   return (
     <DashboardLayout>
-      <div className="p-8">
+      <div className="p-8 max-w-full overflow-x-hidden">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Sales Performance</h1>
           <p className="text-base text-slate-600 mt-2 font-medium">
@@ -145,7 +147,11 @@ export default function SalesPerformancePage() {
                 <div className="w-full bg-slate-200 rounded-full h-3">
                   <div 
                     className="bg-gradient-to-r from-slate-400 to-slate-500 h-3 rounded-full transition-all duration-500"
-                    style={{ width: data.currentWeekSales > 0 ? `${(data.lastWeekSales / data.currentWeekSales) * 100}%` : '100%' }}
+                    style={{ 
+                      width: data.currentWeekSales > 0 
+                        ? `${Math.min((data.lastWeekSales / Math.max(data.currentWeekSales, data.lastWeekSales)) * 100, 100)}%` 
+                        : '100%' 
+                    }}
                   />
                 </div>
                 <p className="text-xs text-slate-500 mt-1">{data.lastWeekOrders} orders</p>
@@ -195,37 +201,43 @@ export default function SalesPerformancePage() {
           <div className="relative max-w-full overflow-hidden">
             <div className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
               <div className="flex gap-6 min-w-max px-2">
-                {[...data.dailyBreakdown].reverse().map((day) => (
-                  <div key={day.date} className="flex flex-col items-center min-w-[100px]">
-                    <div className="text-xs font-semibold text-slate-600 mb-2">
-                      {day.dayName}
-                    </div>
-                    <div className="text-xs text-slate-500 mb-3">
-                      {new Date(day.date).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
-                    </div>
-                    <div className="flex flex-col items-center justify-end h-64 relative">
-                      <div className="absolute top-0 text-xs font-bold text-slate-900 mb-2">
-                        £{day.sales.toLocaleString('en-GB', { maximumFractionDigits: 0 })}
+                {data.dailyBreakdown && data.dailyBreakdown.length > 0 ? (
+                  [...data.dailyBreakdown].reverse().map((day) => (
+                    <div key={day.date} className="flex flex-col items-center min-w-[100px]">
+                      <div className="text-xs font-semibold text-slate-600 mb-2">
+                        {day.dayName}
                       </div>
-                      <div 
-                        className="w-16 bg-gradient-to-t from-indigo-500 to-purple-600 rounded-t-lg transition-all duration-700 hover:from-indigo-600 hover:to-purple-700 cursor-pointer relative group"
-                        style={{ 
-                          height: maxDailySales > 0 ? `${Math.max((day.sales / maxDailySales) * 100, 8)}%` : '8%',
-                          minHeight: '20px'
-                        }}
-                      >
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-xs font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                            {day.orders}
-                          </span>
+                      <div className="text-xs text-slate-500 mb-3">
+                        {new Date(day.date).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
+                      </div>
+                      <div className="flex flex-col items-center justify-end h-64 relative">
+                        <div className="absolute top-0 text-xs font-bold text-slate-900 mb-2">
+                          £{day.sales.toLocaleString('en-GB', { maximumFractionDigits: 0 })}
+                        </div>
+                        <div 
+                          className="w-16 bg-gradient-to-t from-indigo-500 to-purple-600 rounded-t-lg transition-all duration-700 hover:from-indigo-600 hover:to-purple-700 cursor-pointer relative group"
+                          style={{ 
+                            height: maxDailySales > 0 ? `${Math.max((day.sales / maxDailySales) * 100, 8)}%` : '8%',
+                            minHeight: '20px'
+                          }}
+                        >
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-xs font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                              {day.orders}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mt-2 text-xs text-slate-500">
+                          {day.orders} orders
                         </div>
                       </div>
-                      <div className="mt-2 text-xs text-slate-500">
-                        {day.orders} orders
-                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="w-full py-12 text-center text-slate-500">
+                    No daily data available
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>

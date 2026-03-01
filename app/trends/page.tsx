@@ -123,7 +123,7 @@ export default function TrendsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
+      <div className="p-8 max-w-full overflow-x-hidden">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Trends Analytics</h1>
           <p className="text-base text-slate-600 mt-2 font-medium">

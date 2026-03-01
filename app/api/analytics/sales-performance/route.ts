@@ -13,7 +13,10 @@ export async function GET() {
         aov: 0,
         weekOnWeekChange: 0,
         currentWeekSales: 0,
-        lastWeekSales: 0
+        lastWeekSales: 0,
+        currentWeekOrders: 0,
+        lastWeekOrders: 0,
+        dailyBreakdown: []
       });
     }
 

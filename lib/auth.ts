@@ -5,7 +5,7 @@ const secret = new TextEncoder().encode(
   process.env.JWT_SECRET || 'fallback-secret-change-in-production'
 );
 
-const HARDCODED_EMAIL = 'kpriyesh1908@gmail.com';
+const HARDCODED_EMAIL = 'karim@noas.uk';
 const HARDCODED_PASSWORD = '12345678';
 
 export async function login(email: string, password: string) {

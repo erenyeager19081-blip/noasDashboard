@@ -1,59 +1,91 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
-import { Card, Button, Modal } from '../components/ui';
+import { Card, Button } from '../components/ui';
 
-interface StoreMapping {
-  file: File;
-  storeName: string;
+interface Store {
+  id: string;
+  name: string;
   platform: 'takemypayments' | 'booker';
+  outletId?: string;
+  mid?: string;
+  bookerId?: string;
+  lastUploaded?: string;
+  transactionCount?: number;
+  isUploading?: boolean;
 }
 
-export default function UploadPage() {
-  const [files, setFiles] = useState<File[]>([]);
-  const [storeMappings, setStoreMappings] = useState<StoreMapping[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState('');  const [messageType, setMessageType] = useState<'success' | 'error'>('success');  const [showConfirmModal, setShowConfirmModal] = useState(false);
+const PREDEFINED_STORES: Store[] = [
+  // TakeMyPayments Stores
+  { id: 'TPM262523-2', name: 'Bath Road', platform: 'takemypayments', outletId: 'TPM262523-2', mid: 'GB0000000234497' },
+  { id: 'TPM262523-3-1', name: 'Bracknell', platform: 'takemypayments', outletId: 'TPM262523-3', mid: 'GB0000000234494' },
+  { id: 'TPM262523-3-2', name: 'London (3)', platform: 'takemypayments', outletId: 'TPM262523-3', mid: 'GB0000000234498' },
+  { id: 'TPM262523-4', name: 'London (4)', platform: 'takemypayments', outletId: 'TPM262523-4', mid: 'GB0000000234498' },
+  { id: 'TPM262523-5', name: 'Stockley Park', platform: 'takemypayments', outletId: 'TPM262523-5', mid: 'GB0000000234500' },
+  
+  // Booker Stores
+  { id: '742335034', name: 'Cannon Street', platform: 'booker', bookerId: '742335034' },
+  { id: '741169011', name: 'Bath Road', platform: 'booker', bookerId: '741169011' },
+  { id: '741169037', name: 'Bracknell', platform: 'booker', bookerId: '741169037' },
+  { id: '742837716', name: 'Bishopsgate', platform: 'booker', bookerId: '742837716' },
+  { id: '741169854', name: 'Stockley Park', platform: 'booker', bookerId: '741169854' },
+  { id: '741169839', name: 'Waterside', platform: 'booker', bookerId: '741169839' },
+  { id: '740328096', name: 'GX', platform: 'booker', bookerId: '740328096' },
+  { id: '742433466', name: 'Marlow', platform: 'booker', bookerId: '742433466' },
+];
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files);
-      setFiles(selectedFiles);
-      
-      // Auto-create mappings
-      const mappings: StoreMapping[] = selectedFiles.map((file, index) => ({
-        file,
-        storeName: `Store ${index + 1}`,
-        platform: 'takemypayments' // Default
-      }));
-      setStoreMappings(mappings);
+export default function UploadPage() {
+  const [stores, setStores] = useState<Store[]>(PREDEFINED_STORES);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+  const [filterPlatform, setFilterPlatform] = useState<'all' | 'takemypayments' | 'booker'>('all');
+
+  useEffect(() => {
+    fetchStoresStatus();
+  }, []);
+
+  const fetchStoresStatus = async () => {
+    try {
+      const response = await fetch('/api/upload/status');
+      if (response.ok) {
+        const data = await response.json();
+        setStores(prevStores => 
+          prevStores.map(store => {
+            const status = data.stores.find((s: any) => s.storeId === store.id);
+            return status ? { ...store, ...status } : store;
+          })
+        );
+      }
+    } catch (error) {
+      console.error('Failed to fetch store status:', error);
     }
   };
 
-  const updateMapping = (index: number, field: 'storeName' | 'platform', value: string) => {
-    const updated = [...storeMappings];
-    updated[index] = { ...updated[index], [field]: value };
-    setStoreMappings(updated);
-  };
+  const handleFileSelect = async (storeId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  const handleUpload = async () => {
-    setShowConfirmModal(false);
-    setUploading(true);
+    const store = stores.find(s => s.id === storeId);
+    if (!store) return;
+
+    // Update uploading status
+    setStores(prevStores => 
+      prevStores.map(s => s.id === storeId ? { ...s, isUploading: true } : s)
+    );
     setMessage('');
 
     try {
       const formData = new FormData();
-      
-      storeMappings.forEach((mapping, index) => {
-        formData.append(`file_${index}`, mapping.file);
-        formData.append(`storeName_${index}`, mapping.storeName);
-        formData.append(`platform_${index}`, mapping.platform);
-      });
-      
-      formData.append('fileCount', storeMappings.length.toString());
+      formData.append('file', file);
+      formData.append('storeId', store.id);
+      formData.append('storeName', store.name);
+      formData.append('platform', store.platform);
+      if (store.outletId) formData.append('outletId', store.outletId);
+      if (store.mid) formData.append('mid', store.mid);
+      if (store.bookerId) formData.append('bookerId', store.bookerId.toString());
 
-      const response = await fetch('/api/upload', {
+      const response = await fetch('/api/upload/store', {
         method: 'POST',
         body: formData
       });
@@ -61,191 +93,268 @@ export default function UploadPage() {
       const data = await response.json();
 
       if (data.success) {
-        setMessage(`Successfully uploaded ${data.transactionsCount} transactions from ${data.storesCount} stores!`);
+        setMessage(`Successfully uploaded ${data.transactionCount} transactions for ${store.name}!`);
         setMessageType('success');
-        setFiles([]);
-        setStoreMappings([]);
+        
+        // Update store status
+        setStores(prevStores => 
+          prevStores.map(s => s.id === storeId 
+            ? { 
+                ...s, 
+                isUploading: false, 
+                lastUploaded: data.lastUploaded,
+                transactionCount: data.transactionCount 
+              } 
+            : s
+          )
+        );
+        
+        // Refresh status
+        fetchStoresStatus();
       } else {
-        setMessage(`Error: ${data.error}`);
+        let errorMsg = data.error || 'Upload failed';
+        
+        // Add column information if available
+        if (data.foundColumns) {
+          errorMsg += `\n\nColumns in your file: ${data.foundColumns}`;
+        }
+        
+        // Log sample data to browser console for debugging
+        if (data.sampleRow) {
+          console.error('Sample row from file:', data.sampleRow);
+        }
+        
+        setMessage(`Error: ${errorMsg}`);
         setMessageType('error');
+        setStores(prevStores => 
+          prevStores.map(s => s.id === storeId ? { ...s, isUploading: false } : s)
+        );
       }
     } catch (error) {
-      setMessage('Failed to upload files. Please try again.');
+      setMessage(`Failed to upload file for ${store.name}. Please try again.`);
       setMessageType('error');
-    } finally {
-      setUploading(false);
+      setStores(prevStores => 
+        prevStores.map(s => s.id === storeId ? { ...s, isUploading: false } : s)
+      );
     }
+
+    // Reset file input
+    event.target.value = '';
   };
+
+  const filteredStores = filterPlatform === 'all' 
+    ? stores 
+    : stores.filter(s => s.platform === filterPlatform);
+
+  const uploadedCount = stores.filter(s => s.lastUploaded).length;
+  const totalTransactions = stores.reduce((sum, s) => sum + (s.transactionCount || 0), 0);
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Upload Data Files</h1>
+      <div className="p-8 max-w-full overflow-x-hidden">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Manage Store Data</h1>
           <p className="text-base text-slate-600 mt-2 font-medium">
-            Upload CSV/Excel files from TakeMyPayments and Booker
+            Upload data files individually for each store
           </p>
         </div>
 
-        {/* Upload Area */}
-        <Card className="p-8 mb-6">
-          <div className="border-2 border-dashed border-slate-300 rounded-xl p-12 text-center hover:border-slate-400 transition-colors">
-            <svg className="w-16 h-16 mx-auto text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">Select Files to Upload</h3>
-            <p className="text-sm text-slate-600 mb-4">
-              Supports .csv, .xlsx, and .xls files
-            </p>
-            <input
-              type="file"
-              multiple
-              accept=".csv,.xlsx,.xls"
-              onChange={handleFileSelect}
-              className="hidden"
-              id="file-upload"
-            />
-            <label htmlFor="file-upload">
-              <Button type="button" onClick={() => document.getElementById('file-upload')?.click()}>
-                Choose Files
-              </Button>
-            </label>
-          </div>
-        </Card>
-
-        {/* File Mappings */}
-        {storeMappings.length > 0 && (
-          <Card className="p-6 mb-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Configure Stores ({storeMappings.length} files)</h3>
-            <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
-              {storeMappings.map((mapping, index) => (
-                <div key={index} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">File Name</label>
-                      <input
-                        type="text"
-                        value={mapping.file.name}
-                        disabled
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white text-slate-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">Store Name *</label>
-                      <input
-                        type="text"
-                        value={mapping.storeName}
-                        onChange={(e) => updateMapping(index, 'storeName', e.target.value)}
-                        placeholder="e.g., Downtown Branch"
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-slate-400"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">Platform *</label>
-                      <select
-                        value={mapping.platform}
-                        onChange={(e) => updateMapping(index, 'platform', e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-slate-400"
-                      >
-                        <option value="takemypayments">TakeMyPayments</option>
-                        <option value="booker">Booker</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              ))}
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+          <Card className="p-5 border border-slate-200 hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl">
+                <svg className="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600 font-medium">Total Stores</p>
+                <p className="text-3xl font-bold text-slate-900">{stores.length}</p>
+              </div>
             </div>
           </Card>
-        )}
 
-        {/* Warning & Upload Button */}
-        {storeMappings.length > 0 && (
-          <>
-            <Card className="p-4 mb-6 bg-amber-50 border-amber-200">
-              <div className="flex gap-3">
-                <svg className="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <Card className="p-5 border border-emerald-200 hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-xl">
+                <svg className="w-6 h-6 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <div>
-                  <p className="text-sm font-medium text-amber-900 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    This will replace all existing data
-                  </p>
-                  <p className="text-xs text-amber-700 mt-1">
-                    All previous transactions will be deleted and replaced with the new uploaded data.
+              </div>
+              <div>
+                <p className="text-sm text-slate-600 font-medium">Uploaded</p>
+                <p className="text-3xl font-bold text-emerald-700">{uploadedCount}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-5 border border-blue-200 hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">
+                <svg className="w-6 h-6 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600 font-medium">Total Transactions</p>
+                <p className="text-3xl font-bold text-blue-700">{totalTransactions.toLocaleString()}</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="flex flex-wrap gap-3 mb-6">
+          <Button 
+            variant={filterPlatform === 'all' ? 'primary' : 'outline'}
+            onClick={() => setFilterPlatform('all')}
+            size="sm"
+            className="font-medium"
+          >
+            All Stores ({stores.length})
+          </Button>
+          <Button 
+            variant={filterPlatform === 'takemypayments' ? 'primary' : 'outline'}
+            onClick={() => setFilterPlatform('takemypayments')}
+            size="sm"
+            className="font-medium"
+          >
+            TakeMyPayments ({stores.filter(s => s.platform === 'takemypayments').length})
+          </Button>
+          <Button 
+            variant={filterPlatform === 'booker' ? 'primary' : 'outline'}
+            onClick={() => setFilterPlatform('booker')}
+            size="sm"
+            className="font-medium"
+          >
+            Booker ({stores.filter(s => s.platform === 'booker').length})
+          </Button>
+        </div>
+
+        {/* Stores Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+          {filteredStores.map(store => (
+            <Card key={store.id} className="p-5 hover:shadow-lg transition-shadow duration-200 border border-slate-200">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-slate-900 text-base leading-tight">{store.name}</h3>
+                  <p className="text-xs text-slate-500 mt-1.5 font-medium">
+                    {store.platform === 'takemypayments' ? 'TakeMyPayments' : 'Booker'}
                   </p>
                 </div>
+                <div className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                  store.lastUploaded 
+                    ? 'bg-emerald-100 text-emerald-700' 
+                    : 'bg-slate-100 text-slate-600'
+                }`}>
+                  {store.lastUploaded ? 'Active' : 'No Data'}
+                </div>
+              </div>
+
+              <div className="space-y-2.5 mb-5 text-xs text-slate-600">
+                {store.outletId && (
+                  <div className="flex justify-between">
+                    <span>Outlet ID:</span>
+                    <span className="font-medium text-slate-900">{store.outletId}</span>
+                  </div>
+                )}
+                {store.mid && (
+                  <div className="flex justify-between">
+                    <span>MID:</span>
+                    <span className="font-medium text-slate-900">{store.mid}</span>
+                  </div>
+                )}
+                {store.bookerId && (
+                  <div className="flex justify-between">
+                    <span>Booker ID:</span>
+                    <span className="font-medium text-slate-900">{store.bookerId}</span>
+                  </div>
+                )}
+                {store.lastUploaded && (
+                  <div className="flex justify-between">
+                    <span>Last Upload:</span>
+                    <span className="font-medium text-slate-900">
+                      {new Date(store.lastUploaded).toLocaleString('en-GB', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                )}
+                {store.transactionCount !== undefined && store.transactionCount > 0 && (
+                  <div className="flex justify-between">
+                    <span>Transactions:</span>
+                    <span className="font-medium text-slate-900">
+                      {store.transactionCount.toLocaleString()}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <input
+                  type="file"
+                  accept=".csv,.xlsx,.xls"
+                  onChange={(e) => handleFileSelect(store.id, e)}
+                  className="hidden"
+                  id={`file-${store.id}`}
+                  disabled={store.isUploading}
+                />
+                <label htmlFor={`file-${store.id}`} className="block">
+                  <Button 
+                    type="button" 
+                    onClick={() => document.getElementById(`file-${store.id}`)?.click()}
+                    disabled={store.isUploading}
+                    className="w-full flex items-center justify-center"
+                    size="sm"
+                  >
+                    {store.isUploading ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <span>{store.lastUploaded ? 'Update Data' : 'Upload Data'}</span>
+                      </>
+                    )}
+                  </Button>
+                </label>
               </div>
             </Card>
-
-            <div className="flex gap-4">
-              <Button 
-                onClick={() => setShowConfirmModal(true)} 
-                disabled={uploading}
-                size="lg"
-              >
-                {uploading ? 'Uploading...' : 'Upload & Replace Data'}
-              </Button>
-              {!uploading && (
-                <Button 
-                  onClick={() => { setFiles([]); setStoreMappings([]); }} 
-                  variant="outline"
-                  size="lg"
-                >
-                  Cancel
-                </Button>
-              )}
-            </div>
-          </>
-        )}
+          ))}
+        </div>
 
         {/* Message */}
         {message && (
-          <Card className={`p-4 mt-6 ${messageType === 'success' ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`}>
-            <div className="flex items-center gap-2">
+          <Card className={`p-5 shadow-md ${messageType === 'success' ? 'bg-emerald-50 border-emerald-300' : 'bg-rose-50 border-rose-300'}`}>
+            <div className="flex items-center gap-3">
               {messageType === 'success' ? (
-                <svg className="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-6 h-6 text-emerald-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               ) : (
-                <svg className="w-5 h-5 text-rose-600" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-6 h-6 text-rose-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
               )}
-              <p className={`text-sm font-medium ${messageType === 'success' ? 'text-emerald-900' : 'text-rose-900'}`}>
+              <p className={`text-sm font-medium whitespace-pre-line ${messageType === 'success' ? 'text-emerald-900' : 'text-rose-900'}`}>
                 {message}
               </p>
             </div>
           </Card>
         )}
-
-        {/* Confirmation Modal */}
-        <Modal isOpen={showConfirmModal} onClose={() => setShowConfirmModal(false)} title="Confirm Data Replacement">
-          <div className="space-y-4">
-            <p className="text-slate-700">
-              You are about to upload <span className="font-semibold">{storeMappings.length} file(s)</span> and replace all existing data.
-            </p>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <p className="text-sm text-amber-900 font-medium flex items-center gap-2">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                This action cannot be undone. All previous data will be permanently deleted.
-              </p>
-            </div>
-            <div className="flex gap-3 pt-4">
-              <Button onClick={handleUpload} className="flex-1">
-                Yes, Replace Data
-              </Button>
-              <Button onClick={() => setShowConfirmModal(false)} variant="outline" className="flex-1">
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </Modal>
       </div>
     </DashboardLayout>
   );

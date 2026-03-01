@@ -42,18 +42,18 @@ export async function GET(request: NextRequest) {
     const totalTransactions = transactions.length;
     const averageTransaction = totalTransactions > 0 ? totalSales / totalTransactions : 0;
     
-    // Get last upload metadata
-    const lastUpload = await uploadsCol.findOne({}, { sort: { uploadedAt: -1 } });
+    // Get count of active stores (stores with uploaded data)
+    const activeStoresCount = await uploadsCol.countDocuments({});
     
-    // Get total stores from the last upload (number of files uploaded)
-    const totalStores = lastUpload?.filesCount || 0;
+    // Get last upload metadata
+    const lastUpload = await uploadsCol.findOne({}, { sort: { lastUploaded: -1 } });
     
     return NextResponse.json({
       totalSales,
       totalTransactions,
       averageTransaction,
-      totalStores,
-      lastUploadDate: lastUpload?.uploadedAt || null
+      totalStores: activeStoresCount,
+      lastUploadDate: lastUpload?.lastUploaded || null
     });
   } catch (error) {
     console.error('Failed to fetch stats:', error);
