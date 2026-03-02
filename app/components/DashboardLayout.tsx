@@ -46,27 +46,27 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <NavItem sectionId="/upload" icon="upload" label="Upload Data" onClick={handleNavClick} />
             
             <div className="pt-4 pb-2">
-              <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Business Performance</p>
+              <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Analytics</p>
             </div>
             
-            <NavItem sectionId="/sales-performance" icon="chart" label="Sales Performance" onClick={handleNavClick} />
-            <NavItem sectionId="/site-comparison" icon="compare" label="Site Comparison" onClick={handleNavClick} />
-            <NavItem sectionId="/time-demand" icon="time" label="Time-Based Demand" onClick={handleNavClick} />
+            <NavItem sectionId="/sales-performance" icon="chart" label="Sales & Orders" onClick={handleNavClick} />
+            <NavItem sectionId="/revenue" icon="revenue" label="Revenue Breakdown" onClick={handleNavClick} />
+            <NavItem sectionId="/time-demand" icon="time" label="Peak Hours Analysis" onClick={handleNavClick} />
+            <NavItem sectionId="/trends" icon="trends" label="Trends & Patterns" onClick={handleNavClick} />
             
             <div className="pt-4 pb-2">
-              <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Advanced Analytics</p>
+              <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Store Insights</p>
             </div>
             
-            <NavItem sectionId="/revenue" icon="revenue" label="Revenue Analytics" onClick={handleNavClick} />
-            <NavItem sectionId="/trends" icon="trends" label="Trends & Forecasts" onClick={handleNavClick} />
-            <NavItem sectionId="/performance" icon="performance" label="Performance Metrics" onClick={handleNavClick} />
-            
-            <div className="pt-4 pb-2">
-              <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Legacy Reports</p>
-            </div>
-            
-            <NavItem sectionId="/sales" icon="chart" label="Sales Overview" onClick={handleNavClick} />
+            <NavItem sectionId="/site-comparison" icon="compare" label="Store Performance" onClick={handleNavClick} />
             <NavItem sectionId="/comparison" icon="compare" label="Store Comparison" onClick={handleNavClick} />
+            <NavItem sectionId="/performance" icon="performance" label="Efficiency Metrics" onClick={handleNavClick} />
+            
+            <div className="pt-4 pb-2">
+              <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Legacy</p>
+            </div>
+            
+            <NavItem sectionId="/sales" icon="chart" label="Sales Summary" onClick={handleNavClick} />
           </div>
         </nav>
 

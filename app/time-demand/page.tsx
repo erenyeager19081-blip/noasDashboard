@@ -71,7 +71,7 @@ export default function TimeDemandPage() {
     return (
       <DashboardLayout>
         <div className="p-8">
-          <h1 className="text-4xl font-bold text-slate-900 tracking-tight mb-2">Time-Based Demand</h1>
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight mb-2">Peak Hours Analysis</h1>
           <p className="text-base text-slate-600 mb-8">Sales patterns by hour and day</p>
           <Card className="p-12 text-center">
             <p className="text-slate-600">No data available. Please upload data files first.</p>
@@ -88,7 +88,7 @@ export default function TimeDemandPage() {
     <DashboardLayout>
       <div className="p-8 max-w-full overflow-x-hidden">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Time-Based Demand</h1>
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Peak Hours Analysis</h1>
           <p className="text-base text-slate-600 mt-2 font-medium">
             Understand peak hours and daily patterns
           </p>
@@ -143,17 +143,17 @@ export default function TimeDemandPage() {
               <div className="flex gap-4 min-w-max px-2">
                 {[...data.salesByHour].reverse().filter(h => h.orders > 0).map((hour) => (
                   <div key={hour.hour} className="flex flex-col items-center min-w-[70px]">
-                    <div className="text-xs font-semibold text-slate-700 mb-3">
+                    <div className="text-xs font-semibold text-slate-700 mb-2">
                       {hour.displayHour}
                     </div>
-                    <div className="flex flex-col items-center justify-end h-64 relative">
+                    <div className="flex flex-col items-center justify-end h-72 relative pt-8">
                       <div className="absolute top-0 text-xs font-bold text-slate-900">
                         £{hour.sales.toLocaleString('en-GB', { maximumFractionDigits: 0 })}
                       </div>
                       <div 
                         className="w-14 bg-gradient-to-t from-violet-500 to-purple-600 rounded-t-lg transition-all duration-700 hover:from-violet-600 hover:to-purple-700 cursor-pointer relative group"
                         style={{ 
-                          height: maxHourlySales > 0 ? `${Math.max((hour.sales / maxHourlySales) * 100, 8)}%` : '8%',
+                          height: maxHourlySales > 0 ? `${Math.max((hour.sales / maxHourlySales) * 85, 8)}%` : '8%',
                           minHeight: '20px'
                         }}
                       >
@@ -182,15 +182,15 @@ export default function TimeDemandPage() {
               <div className="flex gap-6 min-w-max px-2 justify-center md:justify-start">
                 {data.salesByDayOfWeek.map((day) => (
                   <div key={day.day} className="flex flex-col items-center min-w-[100px]">
-                    <p className="text-sm font-semibold text-slate-700 mb-3">{day.dayName}</p>
-                    <div className="flex flex-col items-center justify-end h-64 relative">
-                      <div className="absolute top-0 text-xs font-bold text-slate-900 mb-2">
+                    <p className="text-sm font-semibold text-slate-700 mb-2">{day.dayName}</p>
+                    <div className="flex flex-col items-center justify-end h-72 relative pt-8">
+                      <div className="absolute top-0 text-xs font-bold text-slate-900">
                         £{day.sales.toLocaleString('en-GB', { maximumFractionDigits: 0 })}
                       </div>
                       <div 
                         className="w-20 bg-gradient-to-t from-indigo-500 to-indigo-400 rounded-t-lg transition-all duration-700 hover:from-indigo-600 hover:to-indigo-500 cursor-pointer relative group"
                         style={{ 
-                          height: maxDailySales > 0 ? `${Math.max((day.sales / maxDailySales) * 100, 8)}%` : '8%',
+                          height: maxDailySales > 0 ? `${Math.max((day.sales / maxDailySales) * 85, 8)}%` : '8%',
                           minHeight: '40px'
                         }}
                       >

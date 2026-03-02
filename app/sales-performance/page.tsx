@@ -1,37 +1,52 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
-import { Card, StatCard } from '../components/ui';
+import { Card, StatCard, Button } from '../components/ui';
+
+type Period = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'all';
 
 interface SalesPerformanceData {
   totalSales: number;
   ordersCount: number;
   aov: number;
-  weekOnWeekChange: number;
-  currentWeekSales: number;
-  lastWeekSales: number;
-  currentWeekOrders: number;
-  lastWeekOrders: number;
-  dailyBreakdown: {
+  periodChange: number;
+  currentPeriodSales: number;
+  lastPeriodSales: number;
+  currentPeriodOrders: number;
+  lastPeriodOrders: number;
+  breakdown: {
     date: string;
-    dayName: string;
+    label: string;
     sales: number;
     orders: number;
   }[];
+  periodLabel: string;
+  currentPeriodLabel: string;
+  lastPeriodLabel: string;
 }
 
 export default function SalesPerformancePage() {
   const [data, setData] = useState<SalesPerformanceData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState<Period>('weekly');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [period]);
+
+  useEffect(() => {
+    // Scroll to the right (most recent data) when data loads
+    if (scrollContainerRef.current && data) {
+      scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
+    }
+  }, [data]);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
-      const response = await fetch('/api/analytics/sales-performance');
+      const response = await fetch(`/api/analytics/sales-performance?period=${period}`);
       if (response.ok) {
         const result = await response.json();
         setData(result);
@@ -69,18 +84,52 @@ export default function SalesPerformancePage() {
     );
   }
 
-  const maxDailySales = data.dailyBreakdown && data.dailyBreakdown.length > 0
-    ? Math.max(...data.dailyBreakdown.map(d => d.sales))
+  const maxBreakdownSales = data.breakdown && data.breakdown.length > 0
+    ? Math.max(...data.breakdown.map(d => d.sales))
     : 0;
 
   return (
     <DashboardLayout>
       <div className="p-8 max-w-full overflow-x-hidden">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Sales Performance</h1>
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Sales & Orders</h1>
           <p className="text-base text-slate-600 mt-2 font-medium">
             Track revenue, orders, and growth metrics
           </p>
+        </div>
+
+        {/* Period Filter */}
+        <div className="mb-6 flex gap-3">
+          <Button
+            variant={period === 'daily' ? 'primary' : 'outline'}
+            onClick={() => setPeriod('daily')}
+          >
+            Daily
+          </Button>
+          <Button
+            variant={period === 'weekly' ? 'primary' : 'outline'}
+            onClick={() => setPeriod('weekly')}
+          >
+            Weekly
+          </Button>
+          <Button
+            variant={period === 'monthly' ? 'primary' : 'outline'}
+            onClick={() => setPeriod('monthly')}
+          >
+            Monthly
+          </Button>
+          <Button
+            variant={period === 'yearly' ? 'primary' : 'outline'}
+            onClick={() => setPeriod('yearly')}
+          >
+            Yearly
+          </Button>
+          <Button
+            variant={period === 'all' ? 'primary' : 'outline'}
+            onClick={() => setPeriod('all')}
+          >
+            All Time
+          </Button>
         </div>
 
         {/* Key Metrics */}
@@ -98,12 +147,12 @@ export default function SalesPerformancePage() {
             value={`£${data.aov.toFixed(2)}`}
           />
           <Card className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
-            <p className="text-sm font-semibold text-slate-600 mb-2">Week-on-Week</p>
+            <p className="text-sm font-semibold text-slate-600 mb-2">{data.periodLabel}</p>
             <div className="flex items-baseline gap-2">
-              <p className={`text-3xl font-bold ${data.weekOnWeekChange >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
-                {data.weekOnWeekChange >= 0 ? '+' : ''}{data.weekOnWeekChange.toFixed(1)}%
+              <p className={`text-3xl font-bold ${data.periodChange >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                {data.periodChange >= 0 ? '+' : ''}{data.periodChange.toFixed(1)}%
               </p>
-              {data.weekOnWeekChange >= 0 ? (
+              {data.periodChange >= 0 ? (
                 <svg className="w-6 h-6 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
                 </svg>
@@ -116,16 +165,16 @@ export default function SalesPerformancePage() {
           </Card>
         </div>
 
-        {/* Weekly Comparison */}
+        {/* Period Comparison */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <Card className="p-6">
-            <h2 className="text-xl font-bold text-slate-900 mb-6">Weekly Comparison</h2>
+            <h2 className="text-xl font-bold text-slate-900 mb-6">Period Comparison</h2>
             <div className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-semibold text-slate-700">Current Week Sales</span>
+                  <span className="text-sm font-semibold text-slate-700">{data.currentPeriodLabel} Sales</span>
                   <span className="text-lg font-bold text-slate-900">
-                    £{data.currentWeekSales.toLocaleString('en-GB', { minimumFractionDigits: 2 })}
+                    £{data.currentPeriodSales.toLocaleString('en-GB', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-3">
@@ -134,27 +183,27 @@ export default function SalesPerformancePage() {
                     style={{ width: '100%' }}
                   />
                 </div>
-                <p className="text-xs text-slate-500 mt-1">{data.currentWeekOrders} orders</p>
+                <p className="text-xs text-slate-500 mt-1">{data.currentPeriodOrders} orders</p>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-semibold text-slate-700">Last Week Sales</span>
+                  <span className="text-sm font-semibold text-slate-700">{data.lastPeriodLabel} Sales</span>
                   <span className="text-lg font-bold text-slate-900">
-                    £{data.lastWeekSales.toLocaleString('en-GB', { minimumFractionDigits: 2 })}
+                    £{data.lastPeriodSales.toLocaleString('en-GB', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-3">
                   <div 
                     className="bg-gradient-to-r from-slate-400 to-slate-500 h-3 rounded-full transition-all duration-500"
                     style={{ 
-                      width: data.currentWeekSales > 0 
-                        ? `${Math.min((data.lastWeekSales / Math.max(data.currentWeekSales, data.lastWeekSales)) * 100, 100)}%` 
+                      width: data.currentPeriodSales > 0 
+                        ? `${Math.min((data.lastPeriodSales / Math.max(data.currentPeriodSales, data.lastPeriodSales)) * 100, 100)}%` 
                         : '100%' 
                     }}
                   />
                 </div>
-                <p className="text-xs text-slate-500 mt-1">{data.lastWeekOrders} orders</p>
+                <p className="text-xs text-slate-500 mt-1">{data.lastPeriodOrders} orders</p>
               </div>
             </div>
           </Card>
@@ -171,9 +220,9 @@ export default function SalesPerformancePage() {
                 <div>
                   <p className="font-semibold text-slate-900">Revenue Trend</p>
                   <p className="text-sm text-slate-600 mt-1">
-                    {data.weekOnWeekChange >= 0 
-                      ? `Sales are up ${data.weekOnWeekChange.toFixed(1)}% compared to last week`
-                      : `Sales are down ${Math.abs(data.weekOnWeekChange).toFixed(1)}% compared to last week`}
+                    {data.periodChange >= 0 
+                      ? `Sales are up ${data.periodChange.toFixed(1)}% compared to ${data.lastPeriodLabel.toLowerCase()}`
+                      : `Sales are down ${Math.abs(data.periodChange).toFixed(1)}% compared to ${data.lastPeriodLabel.toLowerCase()}`}
                   </p>
                 </div>
               </div>
@@ -195,47 +244,48 @@ export default function SalesPerformancePage() {
           </Card>
         </div>
 
-        {/* Daily Breakdown - Horizontal Scroll */}
+        {/* Period Breakdown - Horizontal Scroll */}
         <Card className="p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-6">Current Week Daily Performance</h2>
+          <h2 className="text-xl font-bold text-slate-900 mb-6">{data.currentPeriodLabel} Performance Breakdown</h2>
+          <p className="text-sm text-slate-500 mb-4">← Scroll left to see historical data</p>
           <div className="relative max-w-full overflow-hidden">
-            <div className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
+            <div ref={scrollContainerRef} className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
               <div className="flex gap-6 min-w-max px-2">
-                {data.dailyBreakdown && data.dailyBreakdown.length > 0 ? (
-                  [...data.dailyBreakdown].reverse().map((day) => (
-                    <div key={day.date} className="flex flex-col items-center min-w-[100px]">
-                      <div className="text-xs font-semibold text-slate-600 mb-2">
-                        {day.dayName}
+                {data.breakdown && data.breakdown.length > 0 ? (
+                  data.breakdown.map((item) => (
+                    <div key={item.date} className="flex flex-col items-center min-w-[100px]">
+                      <div className="text-xs font-semibold text-slate-600 mb-1">
+                        {item.label}
                       </div>
-                      <div className="text-xs text-slate-500 mb-3">
-                        {new Date(day.date).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
+                      <div className="text-xs text-slate-500 mb-2">
+                        {new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                       </div>
-                      <div className="flex flex-col items-center justify-end h-64 relative">
-                        <div className="absolute top-0 text-xs font-bold text-slate-900 mb-2">
-                          £{day.sales.toLocaleString('en-GB', { maximumFractionDigits: 0 })}
+                      <div className="flex flex-col items-center justify-end h-72 relative pt-8">
+                        <div className="absolute top-0 text-xs font-bold text-slate-900">
+                          £{item.sales.toLocaleString('en-GB', { maximumFractionDigits: 0 })}
                         </div>
                         <div 
                           className="w-16 bg-gradient-to-t from-indigo-500 to-purple-600 rounded-t-lg transition-all duration-700 hover:from-indigo-600 hover:to-purple-700 cursor-pointer relative group"
                           style={{ 
-                            height: maxDailySales > 0 ? `${Math.max((day.sales / maxDailySales) * 100, 8)}%` : '8%',
+                            height: maxBreakdownSales > 0 ? `${Math.max((item.sales / maxBreakdownSales) * 85, 8)}%` : '8%',
                             minHeight: '20px'
                           }}
                         >
                           <div className="absolute inset-0 flex items-center justify-center">
                             <span className="text-xs font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                              {day.orders}
+                              {item.orders}
                             </span>
                           </div>
                         </div>
                         <div className="mt-2 text-xs text-slate-500">
-                          {day.orders} orders
+                          {item.orders} orders
                         </div>
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="w-full py-12 text-center text-slate-500">
-                    No daily data available
+                    No breakdown data available
                   </div>
                 )}
               </div>

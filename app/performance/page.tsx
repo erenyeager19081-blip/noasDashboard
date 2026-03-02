@@ -143,7 +143,7 @@ export default function PerformancePage() {
     <DashboardLayout>
       <div className="p-8 max-w-full overflow-x-hidden">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Performance Metrics</h1>
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Efficiency Metrics</h1>
           <p className="text-base text-slate-600 mt-2 font-medium">
             Comprehensive performance analysis and rankings
           </p>
@@ -184,7 +184,7 @@ export default function PerformancePage() {
               Top Performers
             </h3>
             <div className="space-y-3">
-              {data.topPerformers.slice(0, 3).map((store, index) => (
+              {data.topPerformers.slice(0, 5).map((store, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg">
                   <div className="flex items-center gap-3">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${getRankBadgeColor(store.rank)}`}>

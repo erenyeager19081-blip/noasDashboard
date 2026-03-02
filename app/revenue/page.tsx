@@ -120,7 +120,7 @@ export default function RevenuePage() {
     <DashboardLayout>
       <div className="p-8 max-w-full overflow-x-hidden">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Revenue Analytics</h1>
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Revenue Breakdown</h1>
           <p className="text-base text-slate-600 mt-2 font-medium">
             Comprehensive revenue tracking and insights
           </p>

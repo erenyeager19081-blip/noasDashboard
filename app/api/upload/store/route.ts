@@ -236,20 +236,35 @@ function parseDate(dateStr: any): Date {
   
   const str = String(dateStr).trim();
   
-  // Try direct parsing first (handles ISO dates)
+  // Try direct parsing first (handles ISO dates and datetime strings)
   const directParse = new Date(str);
   if (!isNaN(directParse.getTime())) return directParse;
   
-  // Try various date formats with explicit parsing
+  // Try various date formats with explicit parsing (including time)
   const formats = [
-    // DD/MM/YYYY
-    { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, fn: (m: RegExpMatchArray) => new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1])) },
+    // DD/MM/YYYY HH:MM:SS or DD/MM/YYYY HH:MM
+    { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/, fn: (m: RegExpMatchArray) => {
+      const h = m[4] ? parseInt(m[4]) : 0;
+      const min = m[5] ? parseInt(m[5]) : 0;
+      const s = m[6] ? parseInt(m[6]) : 0;
+      return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]), h, min, s);
+    }},
+    // YYYY-MM-DD HH:MM:SS or YYYY-MM-DD HH:MM
+    { regex: /^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/, fn: (m: RegExpMatchArray) => {
+      const h = m[4] ? parseInt(m[4]) : 0;
+      const min = m[5] ? parseInt(m[5]) : 0;
+      const s = m[6] ? parseInt(m[6]) : 0;
+      return new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]), h, min, s);
+    }},
+    // DD-MM-YYYY HH:MM:SS or DD-MM-YYYY HH:MM
+    { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/, fn: (m: RegExpMatchArray) => {
+      const h = m[4] ? parseInt(m[4]) : 0;
+      const min = m[5] ? parseInt(m[5]) : 0;
+      const s = m[6] ? parseInt(m[6]) : 0;
+      return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]), h, min, s);
+    }},
     // MM/DD/YYYY (US format)
-    { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})$/, fn: (m: RegExpMatchArray) => new Date(parseInt(m[3]), parseInt(m[1]) - 1, parseInt(m[2])) },
-    // YYYY-MM-DD
-    { regex: /^(\d{4})-(\d{1,2})-(\d{1,2})$/, fn: (m: RegExpMatchArray) => new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3])) },
-    // DD-MM-YYYY
-    { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})$/, fn: (m: RegExpMatchArray) => new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1])) },
+    { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, fn: (m: RegExpMatchArray) => new Date(parseInt(m[3]), parseInt(m[1]) - 1, parseInt(m[2])) },
   ];
 
   for (const format of formats) {

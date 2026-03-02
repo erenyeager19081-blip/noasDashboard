@@ -31,7 +31,7 @@ export async function GET() {
 
     const underperformers = storeStats
       .sort((a, b) => a.performanceScore - b.performanceScore)
-      .slice(0, 3);
+      .slice(0, 5);
 
     // Calculate efficiency metrics
     const efficiencyMetrics = calculateEfficiencyMetrics(transactions, storeStats);
